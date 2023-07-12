@@ -51,6 +51,8 @@ export async function shopifyGraphqlRequest<T, U = undefined>(
   const {
     errorReporter, transform, storeName, apiKey,
   } = opts;
+
+  console.log('this is a test that we are trying to run');
   const { data } = await axios({
     url: SHOPIFY_GRAPHQL_URL(storeName),
     method: 'post',
