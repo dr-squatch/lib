@@ -1,6 +1,6 @@
 {
   "name": "@dr-squatch/lib",
-  "repository": "git://github.com/dr-squatch/lib#update-configs.git",
+  "repository": "git://github.com/dr-squatch/lib.git",
   "publishConfig": {
     "@dr-squatch:registry": "https://npm.pkg.github.com"
   },
