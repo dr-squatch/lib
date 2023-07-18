@@ -745,6 +745,10 @@ export const getLineItems = async ({
   },
 );
 
+export const testerFunction = () => {
+  console.log('this is the tester function');
+};
+
 // export const addTagsInShopify = async (gid: string, tags: string[]) => backOff(
 //   // eslint-disable-next-line no-return-await
 //   async () => await addTagWithoutRetry(gid, tags),
