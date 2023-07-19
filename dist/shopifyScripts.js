@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLineItems = exports.updateOrderPhoneNumber = exports.queryOrderDataWithPaymentAndFulfillmentStatus = exports.removeLineItemFromShopifyOrderWithoutRefunding = exports.removeLineItemFromShopifyOrderWithRefund = exports.closeOrder = exports.cancelOrderREST = exports.refundLineItem = exports.removeTagsInShopify = exports.addTagsInShopify = exports.getChannelInfo = exports.getTagsFromShopifyCustomer = exports.getTagsFromShopifyOrder = exports.getFulfillmentAndTagsFromShopify = exports.shopifyGraphqlRequest = exports.getShopifyOrder = void 0;
+exports.testerFunction = exports.getLineItems = exports.updateOrderPhoneNumber = exports.queryOrderDataWithPaymentAndFulfillmentStatus = exports.removeLineItemFromShopifyOrderWithoutRefunding = exports.removeLineItemFromShopifyOrderWithRefund = exports.closeOrder = exports.cancelOrderREST = exports.refundLineItem = exports.removeTagsInShopify = exports.addTagsInShopify = exports.getChannelInfo = exports.getTagsFromShopifyCustomer = exports.getTagsFromShopifyOrder = exports.getFulfillmentAndTagsFromShopify = exports.shopifyGraphqlRequest = exports.getShopifyOrder = void 0;
 /* eslint-disable import/no-extraneous-dependencies */
 const axios_1 = __importDefault(require("axios"));
 const axios_retry_1 = __importDefault(require("axios-retry"));
@@ -36,6 +36,7 @@ exports.getShopifyOrder = getShopifyOrder;
 function shopifyGraphqlRequest(requestPayload, opts) {
     return __awaiter(this, void 0, void 0, function* () {
         const { errorReporter, transform, storeName, apiKey, } = opts;
+        console.log('this is a test that we are trying to run');
         const { data } = yield (0, axios_1.default)({
             url: SHOPIFY_GRAPHQL_URL(storeName),
             method: 'post',
@@ -605,3 +606,7 @@ const getLineItems = ({ orderId, }) => __awaiter(void 0, void 0, void 0, functio
     });
 });
 exports.getLineItems = getLineItems;
+const testerFunction = () => {
+    console.log('this is the tester function');
+};
+exports.testerFunction = testerFunction;

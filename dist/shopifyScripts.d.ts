@@ -164,6 +164,7 @@ export declare const getLineItems: ({ orderId, }: {
         };
     };
 }>;
+export declare const testerFunction: () => void;
 export interface OrderDataWithPaymentAndFulfillmentStatus {
     displayFulfillmentStatus: string;
     displayFinancialStatus: string;
