@@ -606,7 +606,7 @@ const getLineItems = ({ orderId, }) => __awaiter(void 0, void 0, void 0, functio
     });
 });
 exports.getLineItems = getLineItems;
-const testerFunction = () => {
+const testerFunction = () => __awaiter(void 0, void 0, void 0, function* () {
     console.log('this is the tester function');
-};
+});
 exports.testerFunction = testerFunction;

@@ -745,7 +745,7 @@ export const getLineItems = async ({
   },
 );
 
-export const testerFunction = () => {
+export const testerFunction = async () => {
   console.log('this is the tester function');
 };
 
