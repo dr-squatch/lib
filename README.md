@@ -17,6 +17,22 @@ or for the cutting-edge/latest in the main branch:
 npm i github:dr-squatch/lib
 ```
 
+Development: 
+
+When attempting to create new functionality, create a new branch and build newly added code with: 
+``` bash
+npm run build
+```
+
+This will allow you to pull in the updated development package in another repository using the command: 
+``` bash
+ npm install --save "https://github.com/dr-squatch/lib#{branchName}"
+```
+
+To ensure proper import of development package uninstall previous dependency and reinstall
+
+
+
 Import with:
 ```typescript
 import { someFunc } from '@dr-squatch/lib';
@@ -31,6 +47,7 @@ import { someFunc } from '@dr-squatch/lib';
 
 - When referencing this library in your `package.json`, remember to specify the exact version you want that currently works for your use case.
 - Make sure to include the `env vars` that this library would need, in the project you're using this library in.
+- If attempting to create test cases and run from local repository, add a .env file with corresponding credentials
 
 ### Testing
 
