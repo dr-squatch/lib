@@ -6,6 +6,7 @@ export { generateContent } from './build';
 export * from './engineeringEvents';
 export * from './utils';
 export * from './shopifyScripts';
+export * from './shopifyAdminScripts';
 export * from './rechargeScripts';
 export * from './bundlesFromShopifyToSku';
 export * from './shopifyOrderEditing';

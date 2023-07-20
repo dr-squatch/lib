@@ -29,6 +29,7 @@ Object.defineProperty(exports, "generateContent", { enumerable: true, get: funct
 __exportStar(require("./engineeringEvents"), exports);
 __exportStar(require("./utils"), exports);
 __exportStar(require("./shopifyScripts"), exports);
+__exportStar(require("./shopifyAdminScripts"), exports);
 __exportStar(require("./rechargeScripts"), exports);
 __exportStar(require("./bundlesFromShopifyToSku"), exports);
 __exportStar(require("./shopifyOrderEditing"), exports);
