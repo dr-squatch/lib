@@ -1,4 +1,7 @@
 "use strict";
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable max-len */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,14 +16,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.megaRewardsTest = exports.addTagsInShopifyAdmin = exports.getCustomerOrderCount = exports.addCountryTagToCustomerInShopify = exports.tagCustomerInShopify = exports.updateShippingAddressInShopify = exports.addBadAddressTags = exports.isSpecificChannelOrder = exports.isWebStoreOrder = exports.isShopPayOrder = exports.isShippingRequired = void 0;
-/* eslint-disable max-len */
 const axios_1 = __importDefault(require("axios"));
 const exponential_backoff_1 = require("exponential-backoff");
 const shopifyScripts_1 = require("./shopifyScripts");
 // import { cleansedAddress } from '../consumers/remorsePeriodProcessing/useCases/addressValidation/cleanAddress';
 const { 
 // TAG_BAD_ADDRESS_REPLACED,
-TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE, TAG_DO_NOT_PROCESS, SHOPIFY_API_KEY, SHOPIFY_GRAPHQL_URL, STORE_HANDLE, } = process.env;
+US_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE, US_TAG_DO_NOT_PROCESS, US_SHOPIFY_API_KEY, US_SHOPIFY_GRAPHQL_URL, US_STORE_HANDLE, 
+// TAG_BAD_ADDRESS_REPLACED,
+EU_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE, EU_TAG_DO_NOT_PROCESS, EU_SHOPIFY_API_KEY, EU_SHOPIFY_GRAPHQL_URL, EU_STORE_HANDLE, } = process.env;
+let prefix;
 const isShippingRequired = (shopifyOrder) => {
     const { line_items: lineItems } = shopifyOrder;
     for (const { requires_shipping: requiresShipping } of lineItems) {
@@ -94,19 +99,20 @@ exports.isSpecificChannelOrder = isSpecificChannelOrder;
 //   ]);
 // };
 const addBadAddressTags = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
+    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
     const tagsToAdd = [];
     /**
      * @todo add back DO_NOT_PROCESS tagging for very bad addresses,
      * once have the OK from CX to proceed here (on next deploy).
      */
-    tagsToAdd.push(TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE);
+    tagsToAdd.push(process.env[`${prefix}TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE`]);
     /**
      * @description holding off on freezing EU orders, awaiting phase 2 front-end
      * Loqate layer, as Loqate isn't very reliable for scoring international addresses,
      * when compared to US addresses
      */
-    if (STORE_HANDLE !== 'EU') {
-        tagsToAdd.push(TAG_DO_NOT_PROCESS);
+    if (process.env[`${prefix}STORE_HANDLE`] !== 'EU') {
+        tagsToAdd.push(process.env[`${prefix}TAG_DO_NOT_PROCESS`]);
     }
     return Promise.all([
         (0, exports.addTagsInShopifyAdmin)(shopifyOrder.admin_graphql_api_id, tagsToAdd),
@@ -127,6 +133,7 @@ const updateShippingAddressInShopify = (shopifyOrder) => __awaiter(void 0, void 
 });
 exports.updateShippingAddressInShopify = updateShippingAddressInShopify;
 const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
+    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
     const data = JSON.stringify({
         query: `mutation orderUpdate($input: OrderInput!) {
                 orderUpdate(input: $input) {
@@ -152,9 +159,9 @@ const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder) => __awaiter(v
     });
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: SHOPIFY_GRAPHQL_URL,
+        url: `[${prefix}]SHOPIFY_GRAPHQL_URL`,
         headers: {
-            'X-Shopify-Access-Token': SHOPIFY_API_KEY,
+            'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
             'Content-Type': 'application/json',
         },
         data,
@@ -200,6 +207,7 @@ const getCustomerOrderCount = (shopifyOrder) => __awaiter(void 0, void 0, void 0
 });
 exports.getCustomerOrderCount = getCustomerOrderCount;
 const getCustomerOrderCountWithoutRetry = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
+    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
     const data = JSON.stringify({
         query: `{ query: customer(id: "gid://shopify/Customer/${shopifyOrder.customer.id}") {
         numberOfOrders
@@ -210,9 +218,9 @@ const getCustomerOrderCountWithoutRetry = (shopifyOrder) => __awaiter(void 0, vo
     // @ts-ignore
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: SHOPIFY_GRAPHQL_URL,
+        url: `[${prefix}]SHOPIFY_GRAPHQL_URL`,
         headers: {
-            'X-Shopify-Access-Token': SHOPIFY_API_KEY,
+            'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
             'Content-Type': 'application/json',
         },
         data,
@@ -252,9 +260,9 @@ const addTagWithoutRetry = (gid, tags) => __awaiter(void 0, void 0, void 0, func
     // @ts-ignore
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: SHOPIFY_GRAPHQL_URL,
+        url: `[${prefix}]SHOPIFY_GRAPHQL_URL`,
         headers: {
-            'X-Shopify-Access-Token': SHOPIFY_API_KEY,
+            'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
             'Content-Type': 'application/json',
         },
         data,
@@ -288,7 +296,7 @@ const addTagsInShopifyAdmin = (gid, tags) => __awaiter(void 0, void 0, void 0, f
 });
 exports.addTagsInShopifyAdmin = addTagsInShopifyAdmin;
 const megaRewardsTest = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
-    console.debug('entered into test case');
+    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
     const resp = yield (0, axios_1.default)({
         method: 'post',
         url: 'https://0uvw7m1obg.execute-api.us-east-1.amazonaws.com/dev/trigger',

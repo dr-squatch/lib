@@ -1,4 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-len */
+
 import axios from 'axios';
 import { backOff } from 'exponential-backoff';
 import { getChannelInfo } from './shopifyScripts';
@@ -7,12 +10,20 @@ import { ShopifyOrderObject } from './types/shopify';
 
 const {
   // TAG_BAD_ADDRESS_REPLACED,
-  TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE,
-  TAG_DO_NOT_PROCESS,
-  SHOPIFY_API_KEY,
-  SHOPIFY_GRAPHQL_URL,
-  STORE_HANDLE,
+  US_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE,
+  US_TAG_DO_NOT_PROCESS,
+  US_SHOPIFY_API_KEY,
+  US_SHOPIFY_GRAPHQL_URL,
+  US_STORE_HANDLE,
+  // TAG_BAD_ADDRESS_REPLACED,
+  EU_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE,
+  EU_TAG_DO_NOT_PROCESS,
+  EU_SHOPIFY_API_KEY,
+  EU_SHOPIFY_GRAPHQL_URL,
+  EU_STORE_HANDLE,
 } = process.env;
+
+let prefix: string;
 
 export const isShippingRequired = (shopifyOrder: ShopifyOrderObject) => {
   const { line_items: lineItems } = shopifyOrder;
@@ -90,20 +101,21 @@ export const isSpecificChannelOrder = async (
 export const addBadAddressTags = async (
   shopifyOrder: ShopifyOrderObject,
 ) => {
+  prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
   const tagsToAdd: string[] = [];
   /**
    * @todo add back DO_NOT_PROCESS tagging for very bad addresses,
    * once have the OK from CX to proceed here (on next deploy).
    */
-  tagsToAdd.push(TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE as string);
+  tagsToAdd.push(process.env[`${prefix}TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE`] as string);
 
   /**
    * @description holding off on freezing EU orders, awaiting phase 2 front-end
    * Loqate layer, as Loqate isn't very reliable for scoring international addresses,
    * when compared to US addresses
    */
-  if (STORE_HANDLE !== 'EU') {
-    tagsToAdd.push(TAG_DO_NOT_PROCESS as string);
+  if (process.env[`${prefix}STORE_HANDLE`] !== 'EU') {
+    tagsToAdd.push(process.env[`${prefix}TAG_DO_NOT_PROCESS`] as string);
   }
 
   return Promise.all([
@@ -128,6 +140,7 @@ export const updateShippingAddressInShopify = async (shopifyOrder: ShopifyOrderO
 );
 
 const updateShippingAddressInShopifyWithoutRetry = async (shopifyOrder: ShopifyOrderObject) => {
+  prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
   const data = JSON.stringify({
     query: `mutation orderUpdate($input: OrderInput!) {
                 orderUpdate(input: $input) {
@@ -155,9 +168,9 @@ const updateShippingAddressInShopifyWithoutRetry = async (shopifyOrder: ShopifyO
   const resp = await axios(
     {
       method: 'post',
-      url: SHOPIFY_GRAPHQL_URL as string, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
+      url: `[${prefix}]SHOPIFY_GRAPHQL_URL` as string, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
       headers: {
-        'X-Shopify-Access-Token': SHOPIFY_API_KEY as string,
+        'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY` as string,
         'Content-Type': 'application/json',
       },
       data,
@@ -217,6 +230,8 @@ export const getCustomerOrderCount = async (shopifyOrder: ShopifyOrderObject) =>
 const getCustomerOrderCountWithoutRetry = async (
   shopifyOrder: ShopifyOrderObject,
 ): Promise<number> => {
+  prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
+
   const data = JSON.stringify({
     query: `{ query: customer(id: "gid://shopify/Customer/${shopifyOrder.customer.id}") {
         numberOfOrders
@@ -229,9 +244,9 @@ const getCustomerOrderCountWithoutRetry = async (
   const resp = await axios(
     {
       method: 'post',
-      url: SHOPIFY_GRAPHQL_URL, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
+      url: `[${prefix}]SHOPIFY_GRAPHQL_URL`, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
       headers: {
-        'X-Shopify-Access-Token': SHOPIFY_API_KEY,
+        'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
         'Content-Type': 'application/json',
       },
       data,
@@ -282,9 +297,9 @@ const addTagWithoutRetry = async (
   const resp = await axios(
     {
       method: 'post',
-      url: SHOPIFY_GRAPHQL_URL, // 'https://drsquatchsoapco.myshopify.com/admin/api/2022-10/graphql.json',
+      url: `[${prefix}]SHOPIFY_GRAPHQL_URL`, // 'https://drsquatchsoapco.myshopify.com/admin/api/2022-10/graphql.json',
       headers: {
-        'X-Shopify-Access-Token': SHOPIFY_API_KEY,
+        'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
         'Content-Type': 'application/json',
       },
       data,
@@ -322,7 +337,8 @@ export const addTagsInShopifyAdmin = async (gid: string, tags: string[]) => back
 );
 
 export const megaRewardsTest = async (shopifyOrder: ShopifyOrderObject) => {
-  console.debug('entered into test case');
+  prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
+
   const resp = await axios(
     {
       method: 'post',
