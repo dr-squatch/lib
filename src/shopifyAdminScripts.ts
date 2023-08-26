@@ -168,9 +168,9 @@ const updateShippingAddressInShopifyWithoutRetry = async (shopifyOrder: ShopifyO
   const resp = await axios(
     {
       method: 'post',
-      url: `[${prefix}]SHOPIFY_GRAPHQL_URL` as string, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
+      url: US_SHOPIFY_GRAPHQL_URL as string, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
       headers: {
-        'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY` as string,
+        'X-Shopify-Access-Token': US_SHOPIFY_API_KEY as string,
         'Content-Type': 'application/json',
       },
       data,
@@ -244,9 +244,9 @@ const getCustomerOrderCountWithoutRetry = async (
   const resp = await axios(
     {
       method: 'post',
-      url: `[${prefix}]SHOPIFY_GRAPHQL_URL`, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
+      url: US_SHOPIFY_GRAPHQL_URL, // 'https://drsquatchsoapco-dev.myshopify.com/admin/api/2022-04/graphql.json',
       headers: {
-        'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
+        'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
         'Content-Type': 'application/json',
       },
       data,
@@ -297,9 +297,9 @@ const addTagWithoutRetry = async (
   const resp = await axios(
     {
       method: 'post',
-      url: `[${prefix}]SHOPIFY_GRAPHQL_URL`, // 'https://drsquatchsoapco.myshopify.com/admin/api/2022-10/graphql.json',
+      url: US_SHOPIFY_GRAPHQL_URL, // 'https://drsquatchsoapco.myshopify.com/admin/api/2022-10/graphql.json',
       headers: {
-        'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
+        'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
         'Content-Type': 'application/json',
       },
       data,

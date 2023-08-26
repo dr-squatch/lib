@@ -159,9 +159,9 @@ const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder) => __awaiter(v
     });
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: `[${prefix}]SHOPIFY_GRAPHQL_URL`,
+        url: US_SHOPIFY_GRAPHQL_URL,
         headers: {
-            'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
+            'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
             'Content-Type': 'application/json',
         },
         data,
@@ -218,9 +218,9 @@ const getCustomerOrderCountWithoutRetry = (shopifyOrder) => __awaiter(void 0, vo
     // @ts-ignore
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: `[${prefix}]SHOPIFY_GRAPHQL_URL`,
+        url: US_SHOPIFY_GRAPHQL_URL,
         headers: {
-            'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
+            'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
             'Content-Type': 'application/json',
         },
         data,
@@ -260,9 +260,9 @@ const addTagWithoutRetry = (gid, tags) => __awaiter(void 0, void 0, void 0, func
     // @ts-ignore
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: `[${prefix}]SHOPIFY_GRAPHQL_URL`,
+        url: US_SHOPIFY_GRAPHQL_URL,
         headers: {
-            'X-Shopify-Access-Token': `[${prefix}]SHOPIFY_API_KEY`,
+            'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
             'Content-Type': 'application/json',
         },
         data,
