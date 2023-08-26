@@ -25,7 +25,6 @@ const {
 US_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE, US_TAG_DO_NOT_PROCESS, US_SHOPIFY_API_KEY, US_SHOPIFY_GRAPHQL_URL, US_STORE_HANDLE, 
 // TAG_BAD_ADDRESS_REPLACED,
 EU_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE, EU_TAG_DO_NOT_PROCESS, EU_SHOPIFY_API_KEY, EU_SHOPIFY_GRAPHQL_URL, EU_STORE_HANDLE, } = process.env;
-let prefix;
 const isShippingRequired = (shopifyOrder) => {
     const { line_items: lineItems } = shopifyOrder;
     for (const { requires_shipping: requiresShipping } of lineItems) {
@@ -98,14 +97,13 @@ exports.isSpecificChannelOrder = isSpecificChannelOrder;
 //     updateShippingAddressInShopify(shopifyOrder),
 //   ]);
 // };
-const addBadAddressTags = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
-    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
+const addBadAddressTags = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     const tagsToAdd = [];
     /**
      * @todo add back DO_NOT_PROCESS tagging for very bad addresses,
      * once have the OK from CX to proceed here (on next deploy).
      */
-    tagsToAdd.push(process.env[`${prefix}TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE`]);
+    tagsToAdd.push(process.env[`${prefix}_TAG_BAD_ADDRESS_NOT_AUTO_FIXABLE`]);
     /**
      * @description holding off on freezing EU orders, awaiting phase 2 front-end
      * Loqate layer, as Loqate isn't very reliable for scoring international addresses,
@@ -115,14 +113,14 @@ const addBadAddressTags = (shopifyOrder) => __awaiter(void 0, void 0, void 0, fu
         tagsToAdd.push(process.env[`${prefix}TAG_DO_NOT_PROCESS`]);
     }
     return Promise.all([
-        (0, exports.addTagsInShopifyAdmin)(shopifyOrder.admin_graphql_api_id, tagsToAdd),
+        (0, exports.addTagsInShopifyAdmin)(shopifyOrder.admin_graphql_api_id, tagsToAdd, prefix),
     ]);
 });
 exports.addBadAddressTags = addBadAddressTags;
-const updateShippingAddressInShopify = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
+const updateShippingAddressInShopify = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     return (0, exponential_backoff_1.backOff)(
     // eslint-disable-next-line no-return-await
-    () => __awaiter(void 0, void 0, void 0, function* () { return yield updateShippingAddressInShopifyWithoutRetry(shopifyOrder); }), {
+    () => __awaiter(void 0, void 0, void 0, function* () { return yield updateShippingAddressInShopifyWithoutRetry(shopifyOrder, prefix); }), {
         jitter: 'full',
         retry: (err, attemptNumber) => {
             console.error('updateShippingAddressInShopify, retry, error:', err);
@@ -132,8 +130,7 @@ const updateShippingAddressInShopify = (shopifyOrder) => __awaiter(void 0, void 
     });
 });
 exports.updateShippingAddressInShopify = updateShippingAddressInShopify;
-const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
-    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
+const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     const data = JSON.stringify({
         query: `mutation orderUpdate($input: OrderInput!) {
                 orderUpdate(input: $input) {
@@ -159,9 +156,9 @@ const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder) => __awaiter(v
     });
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: US_SHOPIFY_GRAPHQL_URL,
+        url: process.env[`${prefix}_SHOPIFY_GRAPHQL_URL`],
         headers: {
-            'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
+            'X-Shopify-Access-Token': process.env[`${prefix}US_SHOPIFY_API_KEY`],
             'Content-Type': 'application/json',
         },
         data,
@@ -178,8 +175,8 @@ const updateShippingAddressInShopifyWithoutRetry = (shopifyOrder) => __awaiter(v
         throw new Error(respData.data.userErrors[0].message);
     }
 });
-const tagCustomerInShopify = (shopifyOrder, tags) => __awaiter(void 0, void 0, void 0, function* () {
-    return (0, exports.addTagsInShopifyAdmin)(shopifyOrder.customer.admin_graphql_api_id, tags);
+const tagCustomerInShopify = (shopifyOrder, tags, prefix) => __awaiter(void 0, void 0, void 0, function* () {
+    return (0, exports.addTagsInShopifyAdmin)(shopifyOrder.customer.admin_graphql_api_id, tags, prefix);
 });
 exports.tagCustomerInShopify = tagCustomerInShopify;
 /**
@@ -188,15 +185,15 @@ exports.tagCustomerInShopify = tagCustomerInShopify;
  * But, 80-20 rule, bro! In terms of time + resources + ROI of pursuing that...
  * I think customers that do weird stuff like that should maybe expect weird behavior, anyways.
  */
-const addCountryTagToCustomerInShopify = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
+const addCountryTagToCustomerInShopify = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     const customerCountryTag = `${shopifyOrder.shipping_address.country_code.toLowerCase()}-customer`;
-    return (0, exports.addTagsInShopifyAdmin)(shopifyOrder.customer.admin_graphql_api_id, [customerCountryTag]);
+    return (0, exports.addTagsInShopifyAdmin)(shopifyOrder.customer.admin_graphql_api_id, [customerCountryTag], prefix);
 });
 exports.addCountryTagToCustomerInShopify = addCountryTagToCustomerInShopify;
-const getCustomerOrderCount = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
+const getCustomerOrderCount = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     return (0, exponential_backoff_1.backOff)(
     // eslint-disable-next-line no-return-await
-    () => __awaiter(void 0, void 0, void 0, function* () { return yield getCustomerOrderCountWithoutRetry(shopifyOrder); }), {
+    () => __awaiter(void 0, void 0, void 0, function* () { return yield getCustomerOrderCountWithoutRetry(shopifyOrder, prefix); }), {
         jitter: 'full',
         retry: (err, attemptNumber) => {
             console.error('getCustomerOrderCount, retry, error:', err);
@@ -206,8 +203,7 @@ const getCustomerOrderCount = (shopifyOrder) => __awaiter(void 0, void 0, void 0
     });
 });
 exports.getCustomerOrderCount = getCustomerOrderCount;
-const getCustomerOrderCountWithoutRetry = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
-    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
+const getCustomerOrderCountWithoutRetry = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     const data = JSON.stringify({
         query: `{ query: customer(id: "gid://shopify/Customer/${shopifyOrder.customer.id}") {
         numberOfOrders
@@ -218,9 +214,9 @@ const getCustomerOrderCountWithoutRetry = (shopifyOrder) => __awaiter(void 0, vo
     // @ts-ignore
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: US_SHOPIFY_GRAPHQL_URL,
+        url: process.env[`${prefix}US_SHOPIFY_GRAPHQL_URL`],
         headers: {
-            'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
+            'X-Shopify-Access-Token': process.env[`${prefix}US_SHOPIFY_API_KEY`],
             'Content-Type': 'application/json',
         },
         data,
@@ -238,7 +234,7 @@ const getCustomerOrderCountWithoutRetry = (shopifyOrder) => __awaiter(void 0, vo
     }
     return Number(respData.data.query.numberOfOrders);
 });
-const addTagWithoutRetry = (gid, tags) => __awaiter(void 0, void 0, void 0, function* () {
+const addTagWithoutRetry = (gid, tags, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     if (gid.indexOf('gid://') !== 0) {
         throw new Error(`gid (${gid}) doesn't appear to be a valid gid!`);
     }
@@ -260,9 +256,9 @@ const addTagWithoutRetry = (gid, tags) => __awaiter(void 0, void 0, void 0, func
     // @ts-ignore
     const resp = yield (0, axios_1.default)({
         method: 'post',
-        url: US_SHOPIFY_GRAPHQL_URL,
+        url: process.env[`${prefix}_SHOPIFY_GRAPHQL_URL`],
         headers: {
-            'X-Shopify-Access-Token': US_SHOPIFY_API_KEY,
+            'X-Shopify-Access-Token': process.env[`${prefix}US_SHOPIFY_API_KEY`],
             'Content-Type': 'application/json',
         },
         data,
@@ -282,10 +278,10 @@ const addTagWithoutRetry = (gid, tags) => __awaiter(void 0, void 0, void 0, func
  * @description note that each tag is silently truncated to max len of 40,
  * else Shopify would error on adding all tags
  */
-const addTagsInShopifyAdmin = (gid, tags) => __awaiter(void 0, void 0, void 0, function* () {
+const addTagsInShopifyAdmin = (gid, tags, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     return (0, exponential_backoff_1.backOff)(
     // eslint-disable-next-line no-return-await
-    () => __awaiter(void 0, void 0, void 0, function* () { return yield addTagWithoutRetry(gid, tags.map(tag => tag.substring(0, 40))); }), {
+    () => __awaiter(void 0, void 0, void 0, function* () { return yield addTagWithoutRetry(gid, tags.map(tag => tag.substring(0, 40)), prefix); }), {
         jitter: 'full',
         retry: (err, attemptNumber) => {
             console.error('addTagsInShopifyAdmin, retry, error:', err);
@@ -295,8 +291,7 @@ const addTagsInShopifyAdmin = (gid, tags) => __awaiter(void 0, void 0, void 0, f
     });
 });
 exports.addTagsInShopifyAdmin = addTagsInShopifyAdmin;
-const megaRewardsTest = (shopifyOrder) => __awaiter(void 0, void 0, void 0, function* () {
-    prefix = shopifyOrder.name.toLowerCase().includes('uk') ? 'EU_' : 'US_';
+const megaRewardsTest = (shopifyOrder, prefix) => __awaiter(void 0, void 0, void 0, function* () {
     const resp = yield (0, axios_1.default)({
         method: 'post',
         url: 'https://0uvw7m1obg.execute-api.us-east-1.amazonaws.com/dev/trigger',
