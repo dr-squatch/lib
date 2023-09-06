@@ -87,3 +87,12 @@ export class MaxQueue extends MinQueue {
 }
 
 export const lowerAlpha = (s: string) => s.toLowerCase().replace(/\W/g, '');
+
+export const sendResponse = (status: any, data: any) => ({
+  statusCode: status,
+  body: JSON.stringify(data),
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  },
+});

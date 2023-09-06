@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.lowerAlpha = exports.MaxQueue = exports.keyRotater = exports.exponentialBackoff = exports.snakeCaseToCamelCase = exports.camelCaseToSnakeCase = void 0;
+exports.sendResponse = exports.lowerAlpha = exports.MaxQueue = exports.keyRotater = exports.exponentialBackoff = exports.snakeCaseToCamelCase = exports.camelCaseToSnakeCase = void 0;
 const exponential_backoff_1 = require("exponential-backoff");
 const heapify_1 = require("heapify");
 /**
@@ -93,3 +93,12 @@ class MaxQueue extends heapify_1.MinQueue {
 exports.MaxQueue = MaxQueue;
 const lowerAlpha = (s) => s.toLowerCase().replace(/\W/g, '');
 exports.lowerAlpha = lowerAlpha;
+const sendResponse = (status, data) => ({
+    statusCode: status,
+    body: JSON.stringify(data),
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+    },
+});
+exports.sendResponse = sendResponse;

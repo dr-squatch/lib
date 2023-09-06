@@ -33,3 +33,11 @@ export declare class MaxQueue extends MinQueue {
     push(key: number, priority: number): void;
 }
 export declare const lowerAlpha: (s: string) => string;
+export declare const sendResponse: (status: any, data: any) => {
+    statusCode: any;
+    body: string;
+    headers: {
+        'Content-Type': string;
+        'Access-Control-Allow-Origin': string;
+    };
+};
